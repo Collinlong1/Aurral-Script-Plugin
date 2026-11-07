@@ -28,7 +28,7 @@ Use it to tag new albums with beets, kick off a media server scan, post to a cha
    https://github.com/Collinlong1/Aurral-Script-Plugin
    ```
 
-   Or copy `manifest.json` and `index.js` into `/config/plugins/run-scripts` and reopen **Settings > Plugins**.
+   Or copy `manifest.json` and `index.js` into `/config/plugins/scripts` and reopen **Settings > Plugins**.
 
 3. **Set it up.** Open **Settings > Plugins > Scripts**:
    - Set **Scripts folder** to the folder as Aurral sees it, for example `/scripts`.
@@ -128,9 +128,9 @@ The scripts folder is mounted read-only in the example above, so write files som
 
 - A script **succeeds** when it exits with code `0` before its timeout.
 - **Timeout** is 60 seconds unless you set **Timeout (seconds)**, up to 3600. When it passes, the script and every process it started are stopped.
-- A **failure** is logged in Aurral's log under `plugin:run-scripts` with the exit code and the end of the script's output. If it fails within about 7 seconds, it also shows as the plugin's last error on its page.
+- A **failure** is logged in Aurral's log under `plugin:scripts` with the exit code and the end of the script's output. If it fails within about 7 seconds, it also shows as the plugin's last error on its page.
 - **Failed scripts aren't retried.** Aurral doesn't retry plugin events.
-- Each run's **full output** is saved in the plugin's data folder (`/config/plugin-data/run-scripts/logs`). The last 50 are kept.
+- Each run's **full output** is saved in the plugin's data folder (`/config/plugin-data/scripts/logs`). The last 50 are kept.
 - Scripts run **in the background**, so a slow script never holds Aurral up. Several scripts for one event run at the same time.
 
 ## Security

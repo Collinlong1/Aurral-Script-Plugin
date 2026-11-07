@@ -37,7 +37,7 @@ jobs:
         if: steps.version.outputs.exists != 'true'
         run: |
           node --check index.js
-          zip run-scripts.zip manifest.json index.js README.md LICENSE
+          zip scripts.zip manifest.json index.js README.md LICENSE
 
       - name: Publish the release
         if: steps.version.outputs.exists != 'true'
@@ -45,7 +45,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          gh release create "$TAG" run-scripts.zip \
+          gh release create "$TAG" scripts.zip \
             --target "$GITHUB_SHA" \
             --title "Scripts $TAG" \
             --generate-notes
