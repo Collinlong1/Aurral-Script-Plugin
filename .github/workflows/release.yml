@@ -1,11 +1,16 @@
-# Publishes a GitHub release when a version tag (v1.2.3) is pushed. Aurral
-# installs and updates plugins from a repo's latest release, using its first
-# .zip asset.
+# Publishes a GitHub release for the version in manifest.json, tagged
+# v<version>, whenever that version has none yet. Aurral installs and updates
+# plugins from a repo's latest release, using its first .zip asset.
+#
+# To release: bump "version" in manifest.json and push to main. It can also be
+# run by hand from the Actions tab.
 name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+    paths: [manifest.json]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,22 +21,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check the tag matches manifest.json
-        run: |
-          version=$(jq -r .version manifest.json)
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $version"
-            exit 1
-          fi
-          node --check index.js
-
-      - name: Build the plugin zip
-        run: zip run-scripts.zip manifest.json index.js README.md LICENSE
-
-      - name: Publish the release
+      - name: Read the version
+        id: version
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" run-scripts.zip \
-            --title "Run scripts $GITHUB_REF_NAME" \
+          tag="v$(jq -r .version manifest.json)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, nothing to do"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the plugin zip
+        if: steps.version.outputs.exists != 'true'
+        run: |
+          node --check index.js
+          zip run-scripts.zip manifest.json index.js README.md LICENSE
+
+      - name: Publish the release
+        if: steps.version.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$TAG" run-scripts.zip \
+            --target "$GITHUB_SHA" \
+            --title "Run scripts $TAG" \
             --generate-notes
