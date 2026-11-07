@@ -114,15 +114,6 @@ The scripts folder is mounted read-only in the example above, so write files som
 
 A script runs with Aurral's permissions, so it can read and change anything Aurral can. Only admins can install and set up plugins. The plugin runs only files inside the scripts folder, and refuses any name or symlink that leads outside it. Mount the folder read-only.
 
-## Coming from the built-in scripts
-
-If you used the `AURRAL_SCRIPTS_DIR` custom scripts from the [Collinlong1/aurral](https://github.com/Collinlong1/aurral) fork, your scripts work unchanged. The same variables and JSON are passed. A few things differ:
-
-- Scripts are chosen per event, not events per script. Re-enter which scripts run on which events.
-- No retries, and no per-script arguments.
-- `AURRAL_USER_ID` is always empty.
-- Flow finished sends `notifyFlowDone`, not `notifyWeeklyFlowDone`.
-
 ## License
 
 MIT
