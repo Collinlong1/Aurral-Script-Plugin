@@ -1,27 +1,24 @@
 {
   "id": "run-scripts",
   "name": "Run scripts",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "api": 1,
   "description": "Runs your own scripts when things happen in Aurral. List scripts under each event below. The two switches under Adds, notification and download.finished, are how Aurral tells this plugin something happened. Leave both on. To skip an event, leave its scripts blank.",
   "repository": "https://github.com/Collinlong1/Aurral-Script-Plugin",
-  "uses": [
-    "Executables in your scripts folder",
-    "Your Library folder"
-  ],
+  "uses": ["Executables in your scripts folder", "Your Library folder"],
   "settings": [
     {
       "key": "folder",
       "label": "Scripts folder",
       "type": "text",
       "required": true,
-      "help": "The folder that holds your scripts, as Aurral sees it, for example /scripts. Only files inside it can run. Mount it read-only."
+      "help": "The folder that holds your scripts, as Aurral sees it, for example /scripts. Only files inside it can run. Mount it read-only. Select Test to list the scripts in it."
     },
     {
       "key": "discoveryUpdated",
       "label": "Discover updated",
       "type": "text",
-      "help": "When the daily Discover recommendations refresh. Script names, separated by commas, for example notify.sh, scan.py. Leave blank to run nothing. Needs notification on under Adds."
+      "help": "When the daily Discover recommendations refresh. Script names, separated by commas, for example notify.sh, scan.py. Select Test to see the names in your folder. Leave blank to run nothing. Needs notification on under Adds."
     },
     {
       "key": "flowDone",
@@ -67,8 +64,5 @@
     }
   ],
   "test": true,
-  "events": [
-    "notification",
-    "download.finished"
-  ]
+  "events": ["notification", "download.finished"]
 }

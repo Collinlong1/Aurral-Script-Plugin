@@ -220,6 +220,56 @@ async function runScript({ name, folder, vars, seconds, dataFolder }) {
   });
 }
 
+const EVENT_KEYS = [
+  "discoveryUpdated",
+  "flowDone",
+  "requestMade",
+  "requestAvailable",
+  "artistAdded",
+  "trackAdded",
+];
+// Aurral refuses a test message over 500 characters and counts it as broken.
+const MESSAGE_LIMIT = 500;
+
+const fit = (text) => (text.length > MESSAGE_LIMIT ? `${text.slice(0, MESSAGE_LIMIT - 1)}…` : text);
+
+const nameList = (names, shown) =>
+  names.length > shown
+    ? `${names.slice(0, shown).join(", ")}, and ${names.length - shown} more`
+    : names.join(", ");
+
+// The longest message that fits, naming fewer files until it does.
+function fitLines(build) {
+  for (const shown of [15, 10, 5, 3, 1]) {
+    const text = build(shown).join(". ");
+    if (text.length <= MESSAGE_LIMIT) return text;
+  }
+  return fit(build(1).join(". "));
+}
+
+// The files in the scripts folder, by whether they can run. Hidden files and
+// links that lead outside the folder are skipped.
+async function listFolder(folder) {
+  const executable = [];
+  const notExecutable = [];
+  for (const entry of await fs.readdir(folder, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    try {
+      const real = await fs.realpath(path.join(folder, entry.name));
+      const relative = path.relative(folder, real);
+      if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) continue;
+      if (!(await fs.stat(real)).isFile()) continue;
+      const canRun = await fs
+        .access(real, fsConstants.X_OK)
+        .then(() => true)
+        .catch(() => false);
+      (canRun ? executable : notExecutable).push(entry.name);
+    } catch {}
+  }
+  const byName = (a, b) => a.localeCompare(b);
+  return { executable: executable.sort(byName), notExecutable: notExecutable.sort(byName) };
+}
+
 const failureText = (result) =>
   result.timedOut
     ? `${result.name} timed out`
@@ -351,21 +401,37 @@ async function notificationVars(input) {
 
 export default {
   async test(input) {
-    const folder = await scriptsFolder(input.settings || {});
-    const keys = [
-      "discoveryUpdated",
-      "flowDone",
-      "requestMade",
-      "requestAvailable",
-      "artistAdded",
-      "trackAdded",
+    const settings = input.settings || {};
+    const folder = await scriptsFolder(settings);
+    const { executable, notExecutable } = await listFolder(folder);
+    const names = [...new Set(EVENT_KEYS.flatMap((key) => scriptList(settings[key])))];
+
+    const unused = executable.filter((name) => !names.includes(name));
+    const lines = (shown) => [
+      executable.length
+        ? `${executable.length} script(s) in ${folder}: ${nameList(executable, shown)}`
+        : `No executable scripts in ${folder} yet`,
+      ...(notExecutable.length
+        ? [`Not executable, so they can't run (chmod +x): ${nameList(notExecutable, shown)}`]
+        : []),
+      ...(names.length && unused.length
+        ? [`Not listed under any event: ${nameList(unused, shown)}`]
+        : []),
+      ...(names.length ? [] : ["Copy script names into the event fields to run them."]),
     ];
-    const names = [...new Set(keys.flatMap((key) => scriptList(input.settings[key])))];
-    for (const name of names) await resolveScript(folder, name);
-    if (!names.length) return { message: `Found ${folder}. No scripts are set for any event yet.` };
-    if (input.settings.testRuns !== true) {
-      return { message: `Found ${names.length} executable script(s) in ${folder}` };
+
+    const problems = [];
+    for (const name of names) {
+      try {
+        await resolveScript(folder, name);
+      } catch (error) {
+        problems.push(error.message);
+      }
     }
+    // A thrown error shows as a failed test, with the folder listing kept in it.
+    if (problems.length) throw new Error(fitLines((shown) => [...problems, ...lines(shown)]));
+    if (!names.length || settings.testRuns !== true) return { message: fitLines(lines) };
+
     const vars = scriptVars({
       event: "scriptTest",
       message: "Aurral script test",
@@ -385,10 +451,17 @@ export default {
     const failed = results.filter((result) => !result.ok);
     if (failed.length) {
       throw new Error(
-        failed.map((result) => `${failureText(result)}: ${result.output.slice(-300)}`).join("; "),
+        fit(
+          failed.map((result) => `${failureText(result)}: ${result.output.slice(-300)}`).join("; "),
+        ),
       );
     }
-    return { message: `Ran ${names.length} script(s): all exited 0` };
+    return {
+      message: fitLines((shown) => [
+        `Ran ${names.length} script(s): all exited 0`,
+        ...lines(shown),
+      ]),
+    };
   },
 
   events: {

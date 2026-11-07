@@ -35,7 +35,14 @@ Use it to tag new albums with beets, kick off a media server scan, post to a cha
    - Under each event, list the scripts to run, separated by commas, for example `tag.sh, scan.py`. Leave an event blank to run nothing for it.
    - Turn the plugin on.
 
-4. **Test it.** Select **Test** to check that every script you listed exists and is executable. To also run each script once with sample values, turn on **Test runs the scripts** first. The scripts then get the event `scriptTest`.
+4. **Test it.** Select **Test**. It lists the scripts in your folder, so you can copy their names into the event fields, and flags any problems:
+   - files that aren't executable yet (fix with `chmod +x`)
+   - scripts you've listed that are missing, not executable, or outside the folder
+   - scripts in the folder that no event uses
+
+   To also run each listed script once with sample values, turn on **Test runs the scripts** first. The scripts then get the event `scriptTest`.
+
+   Aurral's settings fields are plain text boxes, so the plugin can't fill them in or offer a dropdown. **Test** is the way to see what's there.
 
 ## The switches under "Adds"
 
@@ -53,9 +60,9 @@ Adds
 
 Here, the small **Event** under each name is Aurral's label for a message it sends to the plugin when something happens. It isn't one of the six events you pick scripts for further down the page. Aurral sends this plugin two kinds of message, and the plugin turns each into the matching script setting:
 
-| Under Adds          | Aurral sends it when                         | Runs the scripts listed under                                                  |
-| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
-| `notification`      | Aurral sends any notification                | Discover updated, Flow finished, Request made, Request available, Artist added |
+| Under Adds          | Aurral sends it when                          | Runs the scripts listed under                                                  |
+| ------------------- | --------------------------------------------- | ------------------------------------------------------------------------------ |
+| `notification`      | Aurral sends any notification                 | Discover updated, Flow finished, Request made, Request available, Artist added |
 | `download.finished` | Aurral adds a downloaded track to the Library | Track added                                                                    |
 
 Turning one off stops Aurral sending that message to the plugin, so every script listed under the settings in its row stops running, with no error.
@@ -66,32 +73,32 @@ Aurral shows these switches for every plugin, so you can turn off part of a plug
 
 These are the settings you list scripts under, one per event.
 
-| Setting           | Runs when                                                       | `AURRAL_EVENT`           |
-| ----------------- | --------------------------------------------------------------- | ------------------------ |
-| Discover updated  | The daily Discover recommendations refresh                      | `notifyDiscoveryUpdated` |
-| Flow finished     | A flow finishes its downloads                                   | `notifyFlowDone`         |
-| Request made      | Someone requests an album                                       | `notifyRequestMade`      |
-| Request available | A requested album is downloaded, or was already on disk         | `notifyRequestAvailable` |
-| Artist added      | Someone adds an artist to the Library                           | `notifyArtistAdded`      |
-| Track added       | Aurral adds a downloaded track to the Library, once per track   | `notifyTrackAdded`       |
+| Setting           | Runs when                                                     | `AURRAL_EVENT`           |
+| ----------------- | ------------------------------------------------------------- | ------------------------ |
+| Discover updated  | The daily Discover recommendations refresh                    | `notifyDiscoveryUpdated` |
+| Flow finished     | A flow finishes its downloads                                 | `notifyFlowDone`         |
+| Request made      | Someone requests an album                                     | `notifyRequestMade`      |
+| Request available | A requested album is downloaded, or was already on disk       | `notifyRequestAvailable` |
+| Artist added      | Someone adds an artist to the Library                         | `notifyArtistAdded`      |
+| Track added       | Aurral adds a downloaded track to the Library, once per track | `notifyTrackAdded`       |
 
 ## What a script receives
 
 Each value arrives two ways: as an environment variable, and in one JSON object on standard input (keys in brackets). A value that doesn't apply to the event is an empty string.
 
-| Variable             | JSON key     | Value                                                                       |
-| -------------------- | ------------ | --------------------------------------------------------------------------- |
-| `AURRAL_EVENT`       | `event`      | The event, from the table above                                             |
-| `AURRAL_MESSAGE`     | `message`    | A ready-made sentence, for example `Album available: Hits by Band`           |
-| `AURRAL_ARTIST_NAME` | `artistName` | The artist                                                                  |
-| `AURRAL_ALBUM_NAME`  | `albumName`  | The album                                                                   |
+| Variable             | JSON key     | Value                                                                         |
+| -------------------- | ------------ | ----------------------------------------------------------------------------- |
+| `AURRAL_EVENT`       | `event`      | The event, from the table above                                               |
+| `AURRAL_MESSAGE`     | `message`    | A ready-made sentence, for example `Album available: Hits by Band`            |
+| `AURRAL_ARTIST_NAME` | `artistName` | The artist                                                                    |
+| `AURRAL_ALBUM_NAME`  | `albumName`  | The album                                                                     |
 | `AURRAL_ALBUM_PATH`  | `albumPath`  | The album's folder. Track added, and Request available when the folder exists |
-| `AURRAL_TRACK_NAME`  | `trackName`  | The track, for Track added                                                  |
-| `AURRAL_PATH`        | `path`       | The track's file, for Track added                                           |
-| `AURRAL_USERNAME`    | `username`   | Who requested the album or added the artist                                 |
-| `AURRAL_USER_ID`     | `userId`     | Always empty. Aurral only passes plugins the username                       |
-| `AURRAL_FLOW_NAME`   | `flowName`   | The flow, for Flow finished and Discover updated                            |
-| `AURRAL_FLOW_PATH`   | `flowPath`   | The flow's media path, for Flow finished                                    |
+| `AURRAL_TRACK_NAME`  | `trackName`  | The track, for Track added                                                    |
+| `AURRAL_PATH`        | `path`       | The track's file, for Track added                                             |
+| `AURRAL_USERNAME`    | `username`   | Who requested the album or added the artist                                   |
+| `AURRAL_USER_ID`     | `userId`     | Always empty. Aurral only passes plugins the username                         |
+| `AURRAL_FLOW_NAME`   | `flowName`   | The flow, for Flow finished and Discover updated                              |
+| `AURRAL_FLOW_PATH`   | `flowPath`   | The flow's media path, for Flow finished                                      |
 
 Paths are as Aurral sees them inside its container.
 
