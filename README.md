@@ -1,10 +1,19 @@
-# Run scripts
+# Run scripts for Aurral
 
-An Aurral plugin that runs your own executables when Aurral sends a notification or files a downloaded track. It replaces the built-in custom scripts (`AURRAL_SCRIPTS_DIR`) from the Collinlong1/aurral fork, using only Aurral's plugin API.
+An [Aurral](https://github.com/lklynet/aurral) plugin that runs your own scripts when something happens in Aurral: an album request comes in, a requested album becomes available, a track lands in your Library, a flow finishes, and so on.
+
+Use it to tag new albums with beets, kick off a media server scan, post to a chat service, write a log, or anything else a script can do.
+
+> Aurral plugins are in beta, and Aurral can change how they work in any release. Check this plugin still works after you update Aurral.
+
+## Requirements
+
+- Aurral with plugin support (**Settings > Plugins** exists).
+- Scripts that are executable files (`chmod +x`) and start with a shebang line such as `#!/bin/sh`. The Aurral Docker image includes `sh`, `bash`, `python3`, `node`, and `ffmpeg`.
 
 ## Install
 
-1. Mount your scripts folder into the container, read-only:
+1. **Mount a scripts folder** into the Aurral container. Read-only is safest, so nothing inside the container can change your scripts:
 
    ```yaml
    services:
@@ -13,28 +22,107 @@ An Aurral plugin that runs your own executables when Aurral sends a notification
          - ./scripts:/scripts:ro
    ```
 
-2. In **Settings > Plugins**, paste `https://github.com/Collinlong1/Aurral-Script-Plugin` under **Install from a link** and select **Check**, then install. Or copy this repo's `manifest.json` and `index.js` to `/config/plugins/run-scripts` (the `plugins` folder of Aurral's data folder).
-3. Open **Settings > Plugins > Run scripts**, set **Scripts folder** to `/scripts`, list script file names under each event, and turn the plugin on.
-4. Select **Test**. It checks that every listed script exists and is executable. Turn on **Test runs the scripts** to also run each one with the event `scriptTest`.
+2. **Install the plugin.** In **Settings > Plugins**, paste this link under **Install from a link**, select **Check**, then install:
+
+   ```
+   https://github.com/Collinlong1/Aurral-Script-Plugin
+   ```
+
+   Or copy `manifest.json` and `index.js` into `/config/plugins/run-scripts` and reopen **Settings > Plugins**.
+
+3. **Set it up.** Open **Settings > Plugins > Run scripts**:
+   - Set **Scripts folder** to the folder as Aurral sees it, for example `/scripts`.
+   - Under each event, list the scripts to run, separated by commas, for example `tag.sh, scan.py`. Leave an event blank to run nothing for it.
+   - Turn the plugin on.
+
+4. **Test it.** Select **Test** to check that every script you listed exists and is executable. To also run each script once with sample values, turn on **Test runs the scripts** first. The scripts then get the event `scriptTest`.
+
+## The switches under "Adds"
+
+The plugin's page lists two items under **Adds**, each with a switch:
+
+| Switch              | Runs the scripts listed under                                                 |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `notification`      | Discover updated, Flow finished, Request made, Request available, Artist added |
+| `download.finished` | Track added                                                                   |
+
+**Leave both on.** Aurral adds these switches to every plugin, one per event the plugin listens to, so you can turn off part of a plugin that does several unrelated things. This plugin doesn't need them: an event with no scripts listed already does nothing. If you turn one off, the scripts listed under its events quietly stop running.
+
+## Events
+
+| Setting           | Runs when                                                       | `AURRAL_EVENT`           |
+| ----------------- | --------------------------------------------------------------- | ------------------------ |
+| Discover updated  | The daily Discover recommendations refresh                      | `notifyDiscoveryUpdated` |
+| Flow finished     | A flow finishes its downloads                                   | `notifyFlowDone`         |
+| Request made      | Someone requests an album                                       | `notifyRequestMade`      |
+| Request available | A requested album is downloaded, or was already on disk         | `notifyRequestAvailable` |
+| Artist added      | Someone adds an artist to the Library                           | `notifyArtistAdded`      |
+| Track added       | Aurral adds a downloaded track to the Library, once per track   | `notifyTrackAdded`       |
 
 ## What a script receives
 
-The same as the old built-in scripts: `AURRAL_EVENT`, `AURRAL_MESSAGE`, `AURRAL_ALBUM_NAME`, `AURRAL_ARTIST_NAME`, `AURRAL_ALBUM_PATH`, `AURRAL_TRACK_NAME`, `AURRAL_PATH`, `AURRAL_USERNAME`, `AURRAL_USER_ID`, `AURRAL_FLOW_NAME`, and `AURRAL_FLOW_PATH` as environment variables, and the same values as one JSON object on standard input. A script sees only `PATH`, `HOME`, `LANG`, `LC_ALL`, `TZ`, and `TMPDIR` from the environment besides these. It starts without a shell, from the scripts folder, and only files inside that folder run, including after symlinks are followed.
+Each value arrives two ways: as an environment variable, and in one JSON object on standard input (keys in brackets). A value that doesn't apply to the event is an empty string.
 
-| Setting           | `AURRAL_EVENT`           | Values                                                                 |
-| ----------------- | ------------------------ | ---------------------------------------------------------------------- |
-| Discover updated  | `notifyDiscoveryUpdated` | message, flow name                                                     |
-| Flow finished     | `notifyFlowDone`         | message with counts, flow name and path                                |
-| Request made      | `notifyRequestMade`      | album, artist, username                                                |
-| Request available | `notifyRequestAvailable` | album, artist, username, and the album's Library folder when it exists |
-| Artist added      | `notifyArtistAdded`      | artist, username                                                       |
-| Track added       | `notifyTrackAdded`       | track, artist, album, file path, album folder                          |
+| Variable             | JSON key     | Value                                                                       |
+| -------------------- | ------------ | --------------------------------------------------------------------------- |
+| `AURRAL_EVENT`       | `event`      | The event, from the table above                                             |
+| `AURRAL_MESSAGE`     | `message`    | A ready-made sentence, for example `Album available: Hits by Band`           |
+| `AURRAL_ARTIST_NAME` | `artistName` | The artist                                                                  |
+| `AURRAL_ALBUM_NAME`  | `albumName`  | The album                                                                   |
+| `AURRAL_ALBUM_PATH`  | `albumPath`  | The album's folder. Track added, and Request available when the folder exists |
+| `AURRAL_TRACK_NAME`  | `trackName`  | The track, for Track added                                                  |
+| `AURRAL_PATH`        | `path`       | The track's file, for Track added                                           |
+| `AURRAL_USERNAME`    | `username`   | Who requested the album or added the artist                                 |
+| `AURRAL_USER_ID`     | `userId`     | Always empty. Aurral only passes plugins the username                       |
+| `AURRAL_FLOW_NAME`   | `flowName`   | The flow, for Flow finished and Discover updated                            |
+| `AURRAL_FLOW_PATH`   | `flowPath`   | The flow's media path, for Flow finished                                    |
 
-## Differences from the built-in scripts
+Paths are as Aurral sees them inside its container.
 
-- **No retries.** Upstream doesn't retry plugin events. A failed script is logged once under `plugin:run-scripts`, and a failure within the first 7 seconds also shows as the plugin's last error.
-- **No per-script arguments.** Put fixed arguments in a small wrapper script.
-- **`AURRAL_USER_ID` is always empty**, because plugin events carry only the username.
-- **Flow finished** is `notifyFlowDone`, upstream's current name, not `notifyWeeklyFlowDone`.
-- **Output** goes to a log file per run in the plugin's data folder (the last 50 are kept), and its end goes to the Aurral log when the script finishes.
-- **Timeout** (default 60 seconds, up to 3600) is enforced with coreutils `timeout`, which the Aurral image includes, so it holds after Aurral stops the idle plugin process. It stops the script and everything it started.
+Besides these, a script sees only `PATH`, `HOME`, `LANG`, `LC_ALL`, `TZ`, and `TMPDIR`, so secrets in Aurral's environment stay out of it. It starts from the scripts folder, without a shell, and takes no arguments. If a script needs fixed arguments, call it from a small wrapper script.
+
+### Examples
+
+Log every album that becomes available:
+
+```sh
+#!/bin/sh
+echo "$(date -Is) $AURRAL_ARTIST_NAME - $AURRAL_ALBUM_NAME ($AURRAL_ALBUM_PATH)" >> /config/available.log
+```
+
+Read the JSON in Python instead:
+
+```python
+#!/usr/bin/env python3
+import json, sys
+event = json.load(sys.stdin)
+print(f"{event['event']}: {event['message']}")
+```
+
+The scripts folder is mounted read-only in the example above, so write files somewhere else, such as `/config`.
+
+## Success, failure, and timeouts
+
+- A script **succeeds** when it exits with code `0` before its timeout.
+- **Timeout** is 60 seconds unless you set **Timeout (seconds)**, up to 3600. When it passes, the script and every process it started are stopped.
+- A **failure** is logged in Aurral's log under `plugin:run-scripts` with the exit code and the end of the script's output. If it fails within about 7 seconds, it also shows as the plugin's last error on its page.
+- **Failed scripts aren't retried.** Aurral doesn't retry plugin events.
+- Each run's **full output** is saved in the plugin's data folder (`/config/plugin-data/run-scripts/logs`). The last 50 are kept.
+- Scripts run **in the background**, so a slow script never holds Aurral up. Several scripts for one event run at the same time.
+
+## Security
+
+A script runs with Aurral's permissions, so it can read and change anything Aurral can. Only admins can install and set up plugins. The plugin runs only files inside the scripts folder, and refuses any name or symlink that leads outside it. Mount the folder read-only.
+
+## Coming from the built-in scripts
+
+If you used the `AURRAL_SCRIPTS_DIR` custom scripts from the [Collinlong1/aurral](https://github.com/Collinlong1/aurral) fork, your scripts work unchanged. The same variables and JSON are passed. A few things differ:
+
+- Scripts are chosen per event, not events per script. Re-enter which scripts run on which events.
+- No retries, and no per-script arguments.
+- `AURRAL_USER_ID` is always empty.
+- Flow finished sends `notifyFlowDone`, not `notifyWeeklyFlowDone`.
+
+## License
+
+MIT

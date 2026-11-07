@@ -1,34 +1,57 @@
 {
   "id": "run-scripts",
   "name": "Run scripts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 1,
-  "description": "Runs your own executables from a scripts folder when Aurral sends a notification or files a downloaded track.",
+  "description": "Runs your own scripts when Aurral sends a notification or adds a track. Pick scripts for each event below. Keep both events under Adds turned on: an event with no scripts listed already does nothing.",
   "repository": "https://github.com/Collinlong1/Aurral-Script-Plugin",
-  "uses": ["Executables in your scripts folder", "Your Library folder"],
+  "uses": [
+    "Executables in your scripts folder",
+    "Your Library folder"
+  ],
   "settings": [
     {
       "key": "folder",
       "label": "Scripts folder",
       "type": "text",
       "required": true,
-      "help": "The folder that holds your scripts, for example /scripts. Only files directly inside it run. Mount it read-only."
+      "help": "The folder that holds your scripts, as Aurral sees it, for example /scripts. Only files inside it can run. Mount it read-only."
     },
     {
       "key": "discoveryUpdated",
       "label": "Discover updated",
       "type": "text",
-      "help": "Script file names to run, separated by commas. Leave blank to run nothing."
+      "help": "When the daily Discover recommendations refresh. Script names, separated by commas. Example: notify.sh, scan.py. Leave blank to run nothing."
     },
-    { "key": "flowDone", "label": "Flow finished", "type": "text" },
-    { "key": "requestMade", "label": "Request made", "type": "text" },
-    { "key": "requestAvailable", "label": "Request available", "type": "text" },
-    { "key": "artistAdded", "label": "Artist added", "type": "text" },
+    {
+      "key": "flowDone",
+      "label": "Flow finished",
+      "type": "text",
+      "help": "When a flow finishes its downloads. Script names, separated by commas."
+    },
+    {
+      "key": "requestMade",
+      "label": "Request made",
+      "type": "text",
+      "help": "When someone requests an album. Script names, separated by commas."
+    },
+    {
+      "key": "requestAvailable",
+      "label": "Request available",
+      "type": "text",
+      "help": "When a requested album is downloaded, or was already on disk. Script names, separated by commas."
+    },
+    {
+      "key": "artistAdded",
+      "label": "Artist added",
+      "type": "text",
+      "help": "When someone adds an artist to the Library. Script names, separated by commas."
+    },
     {
       "key": "trackAdded",
       "label": "Track added",
       "type": "text",
-      "help": "Runs once for each track Aurral files in the Library, including flow tracks."
+      "help": "Once for each track Aurral adds to the Library, flow tracks included. Script names, separated by commas."
     },
     {
       "key": "timeoutSec",
@@ -44,5 +67,8 @@
     }
   ],
   "test": true,
-  "events": ["notification", "download.finished"]
+  "events": [
+    "notification",
+    "download.finished"
+  ]
 }
