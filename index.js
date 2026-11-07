@@ -1,6 +1,6 @@
 // Scripts: an Aurral plugin that runs executables from a scripts folder on
-// notification events. It hands a script the same AURRAL_* variables and stdin
-// JSON as the fork's old built-in custom scripts, so those scripts run as-is.
+// notification events, passing event details as AURRAL_* variables and as
+// JSON on standard input.
 
 import { spawn } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
