@@ -1,9 +1,9 @@
 {
   "id": "run-scripts",
   "name": "Run scripts",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "api": 1,
-  "description": "Runs your own scripts when Aurral sends a notification or adds a track. Pick scripts for each event below. Keep both events under Adds turned on: an event with no scripts listed already does nothing.",
+  "description": "Runs your own scripts when things happen in Aurral. List scripts under each event below. The two switches under Adds, notification and download.finished, are how Aurral tells this plugin something happened. Leave both on. To skip an event, leave its scripts blank.",
   "repository": "https://github.com/Collinlong1/Aurral-Script-Plugin",
   "uses": [
     "Executables in your scripts folder",
@@ -21,37 +21,37 @@
       "key": "discoveryUpdated",
       "label": "Discover updated",
       "type": "text",
-      "help": "When the daily Discover recommendations refresh. Script names, separated by commas. Example: notify.sh, scan.py. Leave blank to run nothing."
+      "help": "When the daily Discover recommendations refresh. Script names, separated by commas, for example notify.sh, scan.py. Leave blank to run nothing. Needs notification on under Adds."
     },
     {
       "key": "flowDone",
       "label": "Flow finished",
       "type": "text",
-      "help": "When a flow finishes its downloads. Script names, separated by commas."
+      "help": "When a flow finishes its downloads. Script names, separated by commas. Needs notification on under Adds."
     },
     {
       "key": "requestMade",
       "label": "Request made",
       "type": "text",
-      "help": "When someone requests an album. Script names, separated by commas."
+      "help": "When someone requests an album. Script names, separated by commas. Needs notification on under Adds."
     },
     {
       "key": "requestAvailable",
       "label": "Request available",
       "type": "text",
-      "help": "When a requested album is downloaded, or was already on disk. Script names, separated by commas."
+      "help": "When a requested album is downloaded, or was already on disk. Script names, separated by commas. Needs notification on under Adds."
     },
     {
       "key": "artistAdded",
       "label": "Artist added",
       "type": "text",
-      "help": "When someone adds an artist to the Library. Script names, separated by commas."
+      "help": "When someone adds an artist to the Library. Script names, separated by commas. Needs notification on under Adds."
     },
     {
       "key": "trackAdded",
       "label": "Track added",
       "type": "text",
-      "help": "Once for each track Aurral adds to the Library, flow tracks included. Script names, separated by commas."
+      "help": "Once for each track Aurral adds to the Library, flow tracks included. Script names, separated by commas. Needs download.finished on under Adds."
     },
     {
       "key": "timeoutSec",
