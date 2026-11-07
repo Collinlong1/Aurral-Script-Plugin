@@ -8,7 +8,7 @@ Use it to tag new albums with beets, kick off a media server scan, post to a cha
 
 ## Requirements
 
-- Aurral with plugin support (**Settings > Plugins** exists).
+- Aurral with plugins: a page at **Settings > Plugins**. No stable release has them yet (the latest, v2.13.0, doesn't), so use the nightly image, `ghcr.io/lklynet/aurral:nightly`, until the next release.
 - Scripts that are executable files (`chmod +x`) and start with a shebang line such as `#!/bin/sh`. The Aurral Docker image includes `sh`, `bash`, `python3`, `node`, and `ffmpeg`.
 
 ## Install
