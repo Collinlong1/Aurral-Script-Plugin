@@ -211,9 +211,9 @@ async function runScript({ name, folder, vars, seconds, dataFolder }) {
         durationMs: Date.now() - started,
         output: await logTail(logFile),
       };
-      const summary = JSON.stringify({ ...result, event: vars.event, log: logFile });
-      if (result.ok) console.log(`Script finished: ${summary}`);
-      else console.warn(`Script failed: ${summary}`);
+      const line = logLine(result, { event: vars.event, logFile, seconds });
+      if (result.ok) console.log(line);
+      else console.warn(line);
       void pruneLogs(logDir);
       resolve(result);
     });
@@ -268,6 +268,23 @@ async function listFolder(folder) {
   }
   const byName = (a, b) => a.localeCompare(b);
   return { executable: executable.sort(byName), notExecutable: notExecutable.sort(byName) };
+}
+
+// Aurral keeps 2000 characters of a plugin's log line, so the summary comes
+// first and only the end of the output, where errors usually are, follows.
+const LOG_LINE_OUTPUT = 1200;
+
+function logLine(result, { event, logFile, seconds }) {
+  const took = `${(result.durationMs / 1000).toFixed(1)}s`;
+  const outcome = result.ok
+    ? `Script ${result.name} finished in ${took}`
+    : result.timedOut
+      ? `Script ${result.name} timed out after ${seconds}s. Raise Timeout (seconds) if it needs longer`
+      : `Script ${result.name} failed with ${result.exitCode ?? result.signal} after ${took}`;
+  const output = result.output
+    ? `. Last output:\n${result.output.slice(-LOG_LINE_OUTPUT)}`
+    : ". No output";
+  return `${outcome} (event ${event}). Full output: ${logFile}${output}`;
 }
 
 const failureText = (result) =>
