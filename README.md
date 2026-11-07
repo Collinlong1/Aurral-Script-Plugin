@@ -39,16 +39,32 @@ Use it to tag new albums with beets, kick off a media server scan, post to a cha
 
 ## The switches under "Adds"
 
-The plugin's page lists two items under **Adds**, each with a switch:
+The plugin's page in **Settings > Plugins** lists what the plugin adds, each with a switch:
 
-| Switch              | Runs the scripts listed under                                                 |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `notification`      | Discover updated, Flow finished, Request made, Request available, Artist added |
-| `download.finished` | Track added                                                                   |
+```
+Adds
+  notification                 [on]
+  Event
+  download.finished            [on]
+  Event
+```
 
-**Leave both on.** Aurral adds these switches to every plugin, one per event the plugin listens to, so you can turn off part of a plugin that does several unrelated things. This plugin doesn't need them: an event with no scripts listed already does nothing. If you turn one off, the scripts listed under its events quietly stop running.
+**Leave both on.**
+
+Here, the small **Event** under each name is Aurral's label for a message it sends to the plugin when something happens. It isn't one of the six events you pick scripts for further down the page. Aurral sends this plugin two kinds of message, and the plugin turns each into the matching script setting:
+
+| Under Adds          | Aurral sends it when                         | Runs the scripts listed under                                                  |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
+| `notification`      | Aurral sends any notification                | Discover updated, Flow finished, Request made, Request available, Artist added |
+| `download.finished` | Aurral adds a downloaded track to the Library | Track added                                                                    |
+
+Turning one off stops Aurral sending that message to the plugin, so every script listed under the settings in its row stops running, with no error.
+
+Aurral shows these switches for every plugin, so you can turn off part of a plugin that does several unrelated things. This plugin doesn't need them. To stop scripts running for one event, clear that event's script list instead.
 
 ## Events
+
+These are the settings you list scripts under, one per event.
 
 | Setting           | Runs when                                                       | `AURRAL_EVENT`           |
 | ----------------- | --------------------------------------------------------------- | ------------------------ |
