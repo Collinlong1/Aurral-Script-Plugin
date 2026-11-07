@@ -1,0 +1,48 @@
+{
+  "id": "run-scripts",
+  "name": "Run scripts",
+  "version": "1.0.0",
+  "api": 1,
+  "description": "Runs your own executables from a scripts folder when Aurral sends a notification or files a downloaded track.",
+  "repository": "https://github.com/Collinlong1/Aurral-Script-Plugin",
+  "uses": ["Executables in your scripts folder", "Your Library folder"],
+  "settings": [
+    {
+      "key": "folder",
+      "label": "Scripts folder",
+      "type": "text",
+      "required": true,
+      "help": "The folder that holds your scripts, for example /scripts. Only files directly inside it run. Mount it read-only."
+    },
+    {
+      "key": "discoveryUpdated",
+      "label": "Discover updated",
+      "type": "text",
+      "help": "Script file names to run, separated by commas. Leave blank to run nothing."
+    },
+    { "key": "flowDone", "label": "Flow finished", "type": "text" },
+    { "key": "requestMade", "label": "Request made", "type": "text" },
+    { "key": "requestAvailable", "label": "Request available", "type": "text" },
+    { "key": "artistAdded", "label": "Artist added", "type": "text" },
+    {
+      "key": "trackAdded",
+      "label": "Track added",
+      "type": "text",
+      "help": "Runs once for each track Aurral files in the Library, including flow tracks."
+    },
+    {
+      "key": "timeoutSec",
+      "label": "Timeout (seconds)",
+      "type": "number",
+      "help": "How long a script may run before it and everything it started are stopped. Default 60, up to 3600."
+    },
+    {
+      "key": "testRuns",
+      "label": "Test runs the scripts",
+      "type": "boolean",
+      "help": "When on, Test also runs every script listed above once, with the event scriptTest and sample values."
+    }
+  ],
+  "test": true,
+  "events": ["notification", "download.finished"]
+}
