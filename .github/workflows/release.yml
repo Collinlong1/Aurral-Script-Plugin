@@ -47,5 +47,5 @@ jobs:
         run: |
           gh release create "$TAG" run-scripts.zip \
             --target "$GITHUB_SHA" \
-            --title "Run scripts $TAG" \
+            --title "Scripts $TAG" \
             --generate-notes

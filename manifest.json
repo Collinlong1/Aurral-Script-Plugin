@@ -1,7 +1,7 @@
 {
   "id": "run-scripts",
-  "name": "Run scripts",
-  "version": "1.0.3",
+  "name": "Scripts",
+  "version": "1.0.4",
   "api": 1,
   "description": "Runs your own scripts when things happen in Aurral. List scripts under each event below. The two switches under Adds, notification and download.finished, are how Aurral tells this plugin something happened. Leave both on. To skip an event, leave its scripts blank.",
   "repository": "https://github.com/Collinlong1/Aurral-Script-Plugin",

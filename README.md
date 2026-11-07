@@ -1,4 +1,4 @@
-# Run scripts for Aurral
+# Scripts for Aurral
 
 An [Aurral](https://github.com/lklynet/aurral) plugin that runs your own scripts when something happens in Aurral: an album request comes in, a requested album becomes available, a track lands in your Library, a flow finishes, and so on.
 
@@ -30,7 +30,7 @@ Use it to tag new albums with beets, kick off a media server scan, post to a cha
 
    Or copy `manifest.json` and `index.js` into `/config/plugins/run-scripts` and reopen **Settings > Plugins**.
 
-3. **Set it up.** Open **Settings > Plugins > Run scripts**:
+3. **Set it up.** Open **Settings > Plugins > Scripts**:
    - Set **Scripts folder** to the folder as Aurral sees it, for example `/scripts`.
    - Under each event, list the scripts to run, separated by commas, for example `tag.sh, scan.py`. Leave an event blank to run nothing for it.
    - Turn the plugin on.
